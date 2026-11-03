@@ -14,7 +14,7 @@ variable "env" {
 
 variable "github_repository" {
   type        = string
-  description = "owner/repo, e.g. arun-konderu/gcp-hospital-edge-platform"
+  description = "owner/repo, e.g. arunkonderu-cloud/gcp-hospital-edge-platform"
 }
 
 variable "domain" {

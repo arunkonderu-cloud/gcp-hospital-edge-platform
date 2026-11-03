@@ -14,7 +14,7 @@ spec:
   goTemplate: true
   generators:
     - git:
-        repoURL: https://github.com/YOUR_USER/gcp-hospital-edge-platform.git
+        repoURL: https://github.com/arunkonderu-cloud/gcp-hospital-edge-platform.git
         revision: main
         files:
           - path: "edge/sites/*/site.json"
@@ -27,7 +27,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/YOUR_USER/gcp-hospital-edge-platform.git
+        repoURL: https://github.com/arunkonderu-cloud/gcp-hospital-edge-platform.git
         targetRevision: main
         path: helm/tray-tracker
         helm:
