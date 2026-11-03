@@ -19,6 +19,9 @@ env:
 
 jobs:
   build-scan-push:
+    # Skip cleanly until GCP is provisioned and repo variables are set
+    # (Settings -> Secrets and variables -> Actions -> Variables).
+    if: ${{ vars.GCP_PROJECT_ID != '' }}
     runs-on: ubuntu-latest
     outputs:
       digest: ${{ steps.push.outputs.digest }}
