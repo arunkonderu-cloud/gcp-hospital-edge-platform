@@ -13,7 +13,7 @@ import logging
 import os
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import FastAPI, HTTPException, Request
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
@@ -90,7 +90,7 @@ def record_scan(event: ScanEvent) -> ScanResult:
         site=SITE_ID,
         complete=complete,
         missing=missing,
-        recorded_at=datetime.now(timezone.utc).isoformat(),
+        recorded_at=datetime.now(UTC).isoformat(),
     )
     _EVENTS[result.id] = result.model_dump()
     SCANS.labels(SITE_ID, "complete" if complete else "incomplete").inc()
