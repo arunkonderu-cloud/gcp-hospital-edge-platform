@@ -1,0 +1,54 @@
+# One ApplicationSet renders tray-tracker for every hospital site folder.
+# Each site runs its own ArgoCD and points at its own folder (pull model),
+# so a bad change to one site's values can't touch another site.
+#
+# Rollout waves (promotion by PR):
+#   edge/sites/canary/   -> 1 friendly hospital, 24h bake
+#   edge/sites/general/  -> everyone else, after canary is healthy
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tray-tracker-sites
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - git:
+        repoURL: https://github.com/YOUR_USER/gcp-hospital-edge-platform.git
+        revision: main
+        files:
+          - path: "edge/sites/*/site.json"
+  template:
+    metadata:
+      name: "tray-tracker-{{ .siteId }}"
+      labels:
+        site: "{{ .siteId }}"
+        wave: "{{ .wave }}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/YOUR_USER/gcp-hospital-edge-platform.git
+        targetRevision: main
+        path: helm/tray-tracker
+        helm:
+          valueFiles:
+            - values-edge.yaml
+            - "../../edge/sites/{{ .path.basename }}/values.yaml"
+          parameters:
+            - name: siteId
+              value: "{{ .siteId }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: tray-tracker
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 10
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 30m   # tolerate flaky hospital WAN

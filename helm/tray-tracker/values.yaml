@@ -1,0 +1,59 @@
+# Defaults = GKE. Edge overrides live in values-edge.yaml.
+replicaCount: 2
+
+image:
+  repository: us-east1-docker.pkg.dev/PROJECT_ID/services/tray-tracker
+  # Deploy by immutable digest, not tag (Binary Authorization verifies the digest).
+  digest: ""
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+siteId: gcp-dev
+
+serviceAccount:
+  create: true
+  # Workload Identity: map KSA -> GSA. Empty on edge.
+  gcpServiceAccount: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# GKE Gateway API -> global external HTTPS LB
+gateway:
+  enabled: true
+  className: gke-l7-global-external-managed
+  hostname: api.dev.example.com
+  staticIpName: hep-dev-ingress-ip
+  certificateMap: hep-dev-cert-map
+  securityPolicy: hep-dev-armor
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  # GKE Managed Prometheus uses PodMonitoring; edge uses kube-prometheus ServiceMonitor
+  kind: PodMonitoring

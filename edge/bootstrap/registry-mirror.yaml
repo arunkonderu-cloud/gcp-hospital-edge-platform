@@ -1,0 +1,77 @@
+# On-site pull-through cache of Artifact Registry. If the hospital WAN link
+# drops, already-pulled images keep serving restarts/reschedules locally.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: registry
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-config
+  namespace: registry
+data:
+  config.yml: |
+    version: 0.1
+    storage:
+      filesystem:
+        rootdirectory: /var/lib/registry
+      delete:
+        enabled: true
+    http:
+      addr: :5000
+    proxy:
+      remoteurl: https://us-east1-docker.pkg.dev
+      username: _json_key_base64
+      # password injected from secret "ar-pull" (edge-puller SA, read-only)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: registry }
+  template:
+    metadata:
+      labels: { app: registry }
+    spec:
+      containers:
+        - name: registry
+          image: registry:2.8.3
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REGISTRY_PROXY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ar-pull
+                  key: password
+          volumeMounts:
+            - name: config
+              mountPath: /etc/docker/registry
+            - name: data
+              mountPath: /var/lib/registry
+      volumes:
+        - name: config
+          configMap:
+            name: registry-config
+        - name: data
+          hostPath:
+            path: /var/lib/edge-registry
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: registry
+spec:
+  type: NodePort
+  selector: { app: registry }
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30500

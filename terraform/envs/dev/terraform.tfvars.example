@@ -1,0 +1,8 @@
+project_id        = "your-gcp-project-id"
+region            = "us-east1"
+github_repository = "your-github-user/gcp-hospital-edge-platform"
+domain            = "api.dev.example.com"
+
+authorized_networks = [
+  { name = "home-ip", cidr = "203.0.113.10/32" },
+]

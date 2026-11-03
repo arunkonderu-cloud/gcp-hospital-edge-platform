@@ -1,0 +1,11 @@
+**/.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+.terraform.lock.hcl
+__pycache__/
+.pytest_cache/
+.venv/
+*.sarif
+sbom*.json
+docs/interview-talking-points.md

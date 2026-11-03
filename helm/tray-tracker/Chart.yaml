@@ -1,0 +1,6 @@
+apiVersion: v2
+name: tray-tracker
+description: Tray-tracker microservice — one chart for GKE and hospital edge (k3s)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

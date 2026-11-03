@@ -1,0 +1,23 @@
+# Ship edge logs + k3s audit log back to central storage over outbound HTTPS.
+# Buffered on disk so a WAN outage doesn't lose audit evidence.
+config:
+  clients:
+    - url: https://loki.central.example.com/loki/api/v1/push
+      tenant_id: ${SITE_ID}
+      backoff_config:
+        min_period: 1s
+        max_period: 5m
+        max_retries: 0   # retry forever; positions file prevents data loss
+  snippets:
+    extraScrapeConfigs: |
+      - job_name: k3s-audit
+        static_configs:
+          - targets: [localhost]
+            labels:
+              job: k3s-audit
+              __path__: /var/lib/rancher/k3s/server/logs/audit.log
+    pipelineStages:
+      # Defense in depth: drop anything that looks like an MRN before it leaves the site.
+      - replace:
+          expression: '(MRN[:= ]?\d{6,10})'
+          replace: "MRN:[REDACTED]"

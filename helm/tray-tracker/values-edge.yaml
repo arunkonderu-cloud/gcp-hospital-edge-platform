@@ -1,0 +1,46 @@
+# Hospital edge (single-node or small k3s cluster on hospital hardware).
+replicaCount: 1
+
+image:
+  # Same Artifact Registry path as GKE. k3s registries.yaml transparently routes
+  # the pull through the on-site mirror, so restarts work if the WAN link drops.
+  repository: us-east1-docker.pkg.dev/PROJECT_ID/services/tray-tracker
+
+imagePullSecrets: []
+
+siteId: SITE_ID_OVERRIDE  # set per site by the ArgoCD ApplicationSet
+
+serviceAccount:
+  create: true
+  gcpServiceAccount: ""
+
+service:
+  type: ClusterIP
+
+# No public LB at hospitals: traffic stays on the hospital LAN via Traefik (k3s default).
+gateway:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: traefik
+  hostname: tray-tracker.site.local
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  kind: ServiceMonitor
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    memory: 192Mi
