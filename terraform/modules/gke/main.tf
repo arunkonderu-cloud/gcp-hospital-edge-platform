@@ -126,11 +126,11 @@ resource "google_container_node_pool" "default" {
   }
 
   node_config {
-    machine_type    = var.machine_type
-    service_account = google_service_account.nodes.email
-    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
-    disk_type       = "pd-balanced"
-    disk_size_gb    = 50
+    machine_type      = var.machine_type
+    service_account   = google_service_account.nodes.email
+    oauth_scopes      = ["https://www.googleapis.com/auth/cloud-platform"]
+    disk_type         = "pd-balanced"
+    disk_size_gb      = 50
     boot_disk_kms_key = var.kms_key_id
 
     shielded_instance_config {
